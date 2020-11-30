@@ -206,7 +206,7 @@ int main(int argc, char* argv)
 		desc.Windowed = true;
 		desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-		D3D_FEATURE_LEVEL pFutureLever[] = { D3D_FEATURE_LEVEL_11_0 };
+		D3D_FEATURE_LEVEL pFutureLevel[] = { D3D_FEATURE_LEVEL_11_0 };
 		uint32_t createFlag = 0;
 
 #ifdef _DEBUG
@@ -214,7 +214,7 @@ int main(int argc, char* argv)
 		createFlag |= D3D11_CREATE_DEVICE_DISABLE_GPU_TIMEOUT;
 #endif
 
-		DX::ThrowIfFailed(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createFlag, pFutureLever, _countof(pFutureLever), D3D11_SDK_VERSION, &desc,
+		DX::ThrowIfFailed(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createFlag, pFutureLevel, _countof(pFutureLevel), D3D11_SDK_VERSION, &desc,
 			pSwapChain.GetAddressOf(),
 			pDevice.GetAddressOf(), nullptr,
 			nullptr));
@@ -530,7 +530,7 @@ int main(int argc, char* argv)
 		
 		}
 
-		 DX::ThrowIfFailed(pSwapChain->Present(0, 0));
+		DX::ThrowIfFailed(pSwapChain->Present(0, 0));
 	}
 
 	SDL_Quit();
