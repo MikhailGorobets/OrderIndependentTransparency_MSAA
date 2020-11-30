@@ -15,10 +15,8 @@ void CSMain(uint3 id: SV_DispatchThreadID) {
     float4 backBuffer    = BackBuffer[id.xy];
     float4 resolveBuffer = float4(0.0, 0.0, 0.0, 0.0f);
     
-    ListSubNode nodes[FRAGMENT_COUNT];
-   
-    for (uint sampleIdx = 0; sampleIdx < MSAA_SAMPLE_COUNT; sampleIdx++) {
-       
+    ListSubNode nodes[FRAGMENT_COUNT];   
+    for (uint sampleIdx = 0; sampleIdx < MSAA_SAMPLE_COUNT; sampleIdx++) {     
         uint count   = 0;
         uint nodeIdx = HeadPointersSRV[id.xy];
         if (nodeIdx == 0xFFFFFFFF)
