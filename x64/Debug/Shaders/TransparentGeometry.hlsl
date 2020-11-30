@@ -10,7 +10,7 @@ void VSMain(uint vertexID: SV_VertexID, uint instanceID: SV_InstanceID, out floa
     float3 colors[]    = { float3(1.0, 0.0, 0.0), float3(0.0, 1.0, 0.0), float3(0.0, 0.0, 1.0) };
     float3 instancePositionOffsets[] = { float3(0.0, 0.0, 0.3), float3(0.5, 0.0, 0.4), float3(-0.5, 0.0, 0.5), float3(0.0, 0.5, 0.6), float3(0.0, -0.5, 0.7) };
     
-	color    = float4(colors[vertexID], 0.5);
+    color    = float4(colors[vertexID], 0.5);
     position = float4(float3(positions[vertexID], 0.0) + instancePositionOffsets[instanceID], 1.0f);
 }
 
