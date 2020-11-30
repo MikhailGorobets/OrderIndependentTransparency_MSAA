@@ -28,7 +28,6 @@ namespace DX {
 			sprintf_s(s_str, "Failure with HRESULT of %08X" ,static_cast<uint32_t>(m_Result));
 			return s_str;
 		}
-
 	private:
 		HRESULT m_Result;
 	};
