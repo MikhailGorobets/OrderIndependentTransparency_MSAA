@@ -16,8 +16,7 @@ void VSMain(uint vertexID: SV_VertexID, uint instanceID: SV_InstanceID, out floa
 
 
 [earlydepthstencil]
-void PSMain(float4 position : SV_Position, uint coverage : SV_Coverage, float4 color : TEXCOORD)
-{
+void PSMain(float4 position : SV_Position, uint coverage : SV_Coverage, float4 color : TEXCOORD) {
     uint nodeIdx = LinkedListUAV.IncrementCounter();
    
     uint prevHead;
