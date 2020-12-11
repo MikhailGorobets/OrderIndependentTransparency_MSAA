@@ -27,7 +27,6 @@ namespace DX {
 			sprintf_s(s_str, "Failure with HRESULT of %08X" ,static_cast<uint32_t>(m_Result));
 			return s_str;
 		}
-
 	private:
 		HRESULT m_Result;
 	};
@@ -54,8 +53,12 @@ namespace DX {
 
 		d3dDefines.push_back({ nullptr, nullptr });
 
-		if (FAILED(D3DCompileFromFile(fileName.c_str(), std::data(d3dDefines), D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.c_str(), target.c_str(), shaderFlags, 0, pCodeBlob.GetAddressOf(), pErrorBlob.GetAddressOf()))) 
-			throw std::runtime_error(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
+		if (FAILED(D3DCompileFromFile(fileName.c_str(), std::data(d3dDefines), D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.c_str(), target.c_str(), shaderFlags, 0, pCodeBlob.GetAddressOf(), pErrorBlob.GetAddressOf())))
+		{
+			std::printf(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
+				throw std::runtime_error(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
+		}
+		
 		
 		return pCodeBlob;
 	}
