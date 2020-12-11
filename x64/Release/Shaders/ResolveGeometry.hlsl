@@ -15,14 +15,16 @@ void CSMain(uint3 id: SV_DispatchThreadID) {
     float4 backBuffer    = BackBuffer[id.xy];
     float4 resolveBuffer = float4(0.0, 0.0, 0.0, 0.0f);
     
+    uint nodeHead = HeadPointersSRV[id.xy];
+    if (nodeHead == 0xFFFFFFFF)
+        return;
+    
     ListSubNode nodes[FRAGMENT_COUNT];
    
     for (uint sampleIdx = 0; sampleIdx < MSAA_SAMPLE_COUNT; sampleIdx++) {
        
-        uint count   = 0;
-        uint nodeIdx = HeadPointersSRV[id.xy];
-        if (nodeIdx == 0xFFFFFFFF)
-            return;       
+        uint count = 0;
+        uint nodeIdx = nodeHead;
             
         while (nodeIdx != 0xFFFFFFFF && count < FRAGMENT_COUNT) {
             ListNode node = LinkedListSRV[nodeIdx];

@@ -4,7 +4,8 @@ globallycoherent RWTexture2D<uint>            HeadPointersUAV : register(u0);
 globallycoherent RWStructuredBuffer<ListNode> LinkedListUAV   : register(u1);
 
 
-void VSMain(uint vertexID: SV_VertexID, uint instanceID: SV_InstanceID, out float4 position: SV_Position, out float4 color: TEXCOORD) {
+void VSMain(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID, out float4 position : SV_Position, out float4 color : TEXCOORD)
+{
 
     float2 positions[] = { float2(+0.0, +0.5), float2(+0.5, -0.5), float2(-0.5, -0.5) };
     float3 colors[]    = { float3(1.0, 0.0, 0.0), float3(0.0, 1.0, 0.0), float3(0.0, 0.0, 1.0) };

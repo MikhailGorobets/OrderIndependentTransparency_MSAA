@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cmath>
 #include <utility>
-#include <iostream>
 #include <string>
 
 #include <wrl.h>
@@ -161,9 +160,16 @@ namespace DX {
 
 }
 
+
+
+
 #undef main
 int main(int argc, char* argv)
 {
+
+
+
+
 
 	auto const WINDOW_TITLE  = "OrderIndependentTransparency MSAA";
 	auto const WINDOW_WIDTH  = 1920;
@@ -222,12 +228,7 @@ int main(int argc, char* argv)
 		pDevice->GetImmediateContext(pDeviceContext.GetAddressOf());
 	}
 
-	
-	uint32_t colorQuality_MSAA = 0;
-	uint32_t depthQuality_MSAA = 0;
 
-	DX::ThrowIfFailed(pDevice->CheckMultisampleQualityLevels(colorBufferFormat, MSAA_SAMPLES, &colorQuality_MSAA));
-	DX::ThrowIfFailed(pDevice->CheckMultisampleQualityLevels(depthBufferFormat, MSAA_SAMPLES, &depthQuality_MSAA));
 
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>    pRTVSwapChain;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> pUAVSwapChain;
@@ -241,95 +242,93 @@ int main(int argc, char* argv)
 
 	auto const ResizeRenderTargets = [&](uint32_t width, uint32_t height)-> void {
 
+		pRTVSwapChain.Reset();
+		pUAVSwapChain.Reset();
+		DX::ThrowIfFailed(pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
+
+	
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
 		{
-			pRTVSwapChain.Reset();
-			pUAVSwapChain.Reset();
-			DX::ThrowIfFailed(pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
+			DX::ThrowIfFailed(pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(pBackBuffer.GetAddressOf())));
+			DX::ThrowIfFailed(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, pRTVSwapChain.ReleaseAndGetAddressOf()));
+			DX::ThrowIfFailed(pDevice->CreateUnorderedAccessView(pBackBuffer.Get(), nullptr, pUAVSwapChain.ReleaseAndGetAddressOf()));
+		}
 
-			Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
-			{
-				DX::ThrowIfFailed(pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(pBackBuffer.GetAddressOf())));
-				DX::ThrowIfFailed(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, pRTVSwapChain.ReleaseAndGetAddressOf()));
-				DX::ThrowIfFailed(pDevice->CreateUnorderedAccessView(pBackBuffer.Get(), nullptr, pUAVSwapChain.ReleaseAndGetAddressOf()));
-			}
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBufferMSAA;
+		{
+			D3D11_TEXTURE2D_DESC desc = {};
+			desc.ArraySize = 1;
+			desc.MipLevels = 1;
+			desc.Width = width;
+			desc.Height = height;
+			desc.Format = colorBufferFormat;
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;;
+			desc.SampleDesc.Count = MSAA_SAMPLES;
+			desc.SampleDesc.Quality = DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN;
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			DX::ThrowIfFailed(pDevice->CreateTexture2D(&desc, nullptr, pBackBufferMSAA.GetAddressOf()));
+			DX::ThrowIfFailed(pDevice->CreateRenderTargetView(pBackBufferMSAA.Get(), nullptr, pRTV_MSAA.ReleaseAndGetAddressOf()));
+		}
 
-			Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBufferMSAA;
-			{
-				D3D11_TEXTURE2D_DESC desc = {};
-				desc.ArraySize = 1;
-				desc.MipLevels = 1;
-				desc.Width = width;
-				desc.Height = height;
-				desc.Format = colorBufferFormat;
-				desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;;
-				desc.SampleDesc.Count = MSAA_SAMPLES;
-				desc.SampleDesc.Quality = colorQuality_MSAA - 1;
-				desc.Usage = D3D11_USAGE_DEFAULT;
-				DX::ThrowIfFailed(pDevice->CreateTexture2D(&desc, nullptr, pBackBufferMSAA.GetAddressOf()));
-				DX::ThrowIfFailed(pDevice->CreateRenderTargetView(pBackBufferMSAA.Get(), nullptr, pRTV_MSAA.ReleaseAndGetAddressOf()));
-			}
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthBufferMSAA;
+		{
+			D3D11_TEXTURE2D_DESC desc = {};
+			desc.ArraySize = 1;
+			desc.MipLevels = 1;
+			desc.Width = width;
+			desc.Height = height;
+			desc.Format = depthBufferFormat;
+			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			desc.SampleDesc.Count = MSAA_SAMPLES;
+			desc.SampleDesc.Quality = DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN;
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			DX::ThrowIfFailed(pDevice->CreateTexture2D(&desc, nullptr, pDepthBufferMSAA.GetAddressOf()));
+			DX::ThrowIfFailed(pDevice->CreateDepthStencilView(pDepthBufferMSAA.Get(), nullptr, pDSV_MSAA.ReleaseAndGetAddressOf()));
+		}
+		
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTextureOIT;
+		{
+			D3D11_TEXTURE2D_DESC desc = {};
+			desc.ArraySize = 1;
+			desc.MipLevels = 1;
+			desc.Width = width;
+			desc.Height = height;
+			desc.Format = DXGI_FORMAT_R32_UINT;
+			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+			desc.SampleDesc.Count = 1;
+			desc.SampleDesc.Quality = 0;
+			desc.Usage = D3D11_USAGE_DEFAULT;
+			DX::ThrowIfFailed(pDevice->CreateTexture2D(&desc, nullptr, pTextureOIT.GetAddressOf()));
+			DX::ThrowIfFailed(pDevice->CreateUnorderedAccessView(pTextureOIT.Get(), nullptr, pUAVTextureHeadOIT.ReleaseAndGetAddressOf()));
+			DX::ThrowIfFailed(pDevice->CreateShaderResourceView(pTextureOIT.Get(), nullptr, pSRVTextureHeadOIT.ReleaseAndGetAddressOf()));
+		}
 
-			Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthBufferMSAA;
-			{
-				D3D11_TEXTURE2D_DESC desc = {};
-				desc.ArraySize = 1;
-				desc.MipLevels = 1;
-				desc.Width = width;
-				desc.Height = height;
-				desc.Format = depthBufferFormat;
-				desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-				desc.SampleDesc.Count = MSAA_SAMPLES;
-				desc.SampleDesc.Quality = depthQuality_MSAA - 1;
-				desc.Usage = D3D11_USAGE_DEFAULT;
-				DX::ThrowIfFailed(pDevice->CreateTexture2D(&desc, nullptr, pDepthBufferMSAA.GetAddressOf()));
-				DX::ThrowIfFailed(pDevice->CreateDepthStencilView(pDepthBufferMSAA.Get(), nullptr, pDSV_MSAA.ReleaseAndGetAddressOf()));
-			}
+		struct ListNode {
+			uint32_t  Next;
+			uint32_t  Color;
+			uint32_t  Depth;
+			uint32_t  Coverage;
+		};
+
+		Microsoft::WRL::ComPtr<ID3D11Buffer> pBufferOIT = DX::CreateStructuredBuffer<ListNode>(pDevice, width * height * OIT_LAYER_COUNT, false, true);;
+		{
+			D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
+			desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+			desc.Buffer.FirstElement = 0;
+			desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_COUNTER;
+			desc.Buffer.NumElements = width * height * OIT_LAYER_COUNT;
+			DX::ThrowIfFailed(pDevice->CreateUnorderedAccessView(pBufferOIT.Get(), &desc, pUAVBufferLinkedListOIT.ReleaseAndGetAddressOf()));
 		}
 
 		{
-			Microsoft::WRL::ComPtr<ID3D11Texture2D> pTextureOIT;
-			{
-				D3D11_TEXTURE2D_DESC desc = {};
-				desc.ArraySize = 1;
-				desc.MipLevels = 1;
-				desc.Width = width;
-				desc.Height = height;
-				desc.Format = DXGI_FORMAT_R32_UINT;
-				desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-				desc.SampleDesc.Count = 1;
-				desc.SampleDesc.Quality = 0;
-				desc.Usage = D3D11_USAGE_DEFAULT;
-				DX::ThrowIfFailed(pDevice->CreateTexture2D(&desc, nullptr, pTextureOIT.GetAddressOf()));
-				DX::ThrowIfFailed(pDevice->CreateUnorderedAccessView(pTextureOIT.Get(), nullptr, pUAVTextureHeadOIT.ReleaseAndGetAddressOf()));
-				DX::ThrowIfFailed(pDevice->CreateShaderResourceView(pTextureOIT.Get(), nullptr, pSRVTextureHeadOIT.ReleaseAndGetAddressOf()));
-			}
-
-			struct ListNode {
-				uint32_t  Next;
-				uint32_t  Color;
-				uint32_t  Depth;
-				uint32_t  Coverage;
-			};
-
-			Microsoft::WRL::ComPtr<ID3D11Buffer> pBufferOIT = DX::CreateStructuredBuffer<ListNode>(pDevice, width * height * OIT_LAYER_COUNT, false, true);;
-			{
-				D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
-				desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-				desc.Buffer.FirstElement = 0;
-				desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_COUNTER;
-				desc.Buffer.NumElements = width * height * OIT_LAYER_COUNT;
-				DX::ThrowIfFailed(pDevice->CreateUnorderedAccessView(pBufferOIT.Get(), &desc, pUAVBufferLinkedListOIT.ReleaseAndGetAddressOf()));
-			}
-
-			{
-				D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
-				desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-				desc.Buffer.FirstElement = 0;
-				desc.Buffer.NumElements = width * height * OIT_LAYER_COUNT;
-				DX::ThrowIfFailed(pDevice->CreateShaderResourceView(pBufferOIT.Get(), &desc, pSRVBufferLinkedListOIT.ReleaseAndGetAddressOf()));
-			}
-
+			D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
+			desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+			desc.Buffer.FirstElement = 0;
+			desc.Buffer.NumElements = width * height * OIT_LAYER_COUNT;
+			DX::ThrowIfFailed(pDevice->CreateShaderResourceView(pBufferOIT.Get(), &desc, pSRVBufferLinkedListOIT.ReleaseAndGetAddressOf()));
 		}
+
+		
 
 	};
 	ResizeRenderTargets(WINDOW_WIDTH, WINDOW_HEIGHT);
