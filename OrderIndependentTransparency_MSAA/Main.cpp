@@ -14,8 +14,6 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 
-
-
 namespace DX {
 
 	class ComException : public std::exception {
@@ -53,13 +51,10 @@ namespace DX {
 
 		d3dDefines.push_back({ nullptr, nullptr });
 
-		if (FAILED(D3DCompileFromFile(fileName.c_str(), std::data(d3dDefines), D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.c_str(), target.c_str(), shaderFlags, 0, pCodeBlob.GetAddressOf(), pErrorBlob.GetAddressOf())))
-		{
+		if (FAILED(D3DCompileFromFile(fileName.c_str(), std::data(d3dDefines), D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint.c_str(), target.c_str(), shaderFlags, 0, pCodeBlob.GetAddressOf(), pErrorBlob.GetAddressOf()))) {
 			std::printf(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
-				throw std::runtime_error(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
-		}
-		
-		
+			throw std::runtime_error(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
+		}	
 		return pCodeBlob;
 	}
 
@@ -78,7 +73,6 @@ namespace DX {
 
 	template<typename T>
 	auto CreateStructuredBuffer(Microsoft::WRL::ComPtr<ID3D11Device> pDevice, uint32_t numElements, bool isCPUWritable, bool isGPUWritable, const T* pInitialData = nullptr) -> Microsoft::WRL::ComPtr<ID3D11Buffer> {
-
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pBuffer;
 
 		D3D11_BUFFER_DESC desc = {};
@@ -164,15 +158,9 @@ namespace DX {
 }
 
 
-
-
 #undef main
 int main(int argc, char* argv)
 {
-
-
-
-
 
 	auto const WINDOW_TITLE  = "OrderIndependentTransparency MSAA";
 	auto const WINDOW_WIDTH  = 1920;
@@ -217,7 +205,6 @@ int main(int argc, char* argv)
 
 		D3D_FEATURE_LEVEL pFutureLevel[] = { D3D_FEATURE_LEVEL_11_0 };
 		uint32_t createFlag = 0;
-
 #ifdef _DEBUG
 		createFlag |= D3D11_CREATE_DEVICE_DEBUG;
 		createFlag |= D3D11_CREATE_DEVICE_DISABLE_GPU_TIMEOUT;
@@ -330,9 +317,6 @@ int main(int argc, char* argv)
 			desc.Buffer.NumElements = width * height * OIT_LAYER_COUNT;
 			DX::ThrowIfFailed(pDevice->CreateShaderResourceView(pBufferOIT.Get(), &desc, pSRVBufferLinkedListOIT.ReleaseAndGetAddressOf()));
 		}
-
-		
-
 	};
 	ResizeRenderTargets(WINDOW_WIDTH, WINDOW_HEIGHT);
 
