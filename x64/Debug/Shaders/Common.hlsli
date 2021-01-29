@@ -3,7 +3,7 @@ struct ListNode {
     uint Next;
     uint Color;
     uint Depth;
-	uint Coverage;
+    uint Coverage;
 };
 
 struct ListSubNode {
