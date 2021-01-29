@@ -50,7 +50,6 @@ void CSMain(uint3 id: SV_DispatchThreadID) {
             dstPixelColor = lerp(dstPixelColor, srcPixelColor, srcPixelColor.a);
         }
         resolveBuffer += dstPixelColor;
-    }
-   
+    }  
     BackBuffer[id.xy] = resolveBuffer / MSAA_SAMPLE_COUNT;
 }
