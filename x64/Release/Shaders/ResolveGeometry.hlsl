@@ -8,14 +8,12 @@ RWTexture2D<unorm float4>  BackBuffer      : register(u0);
 Texture2D<uint>            HeadPointersSRV : register(t0);
 StructuredBuffer<ListNode> LinkedListSRV   : register(t1);
 
-
 [numthreads(8, 8, 1)]
 void CSMain(uint3 id: SV_DispatchThreadID) {
        
     float4 backBuffer    = BackBuffer[id.xy];
     float4 resolveBuffer = float4(0.0, 0.0, 0.0, 0.0f);
     
-
     uint nodeHead = HeadPointersSRV[id.xy];
     if (nodeHead == 0xFFFFFFFF)
         return;
